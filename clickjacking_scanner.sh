@@ -77,29 +77,35 @@ while getopts "ht:l:ao:" opt; do
   esac
 done
 
+temp_dir=$(mktemp -d)
+temp_file="$temp_dir/temp_output.txt"
+
 save_output() {
   if [[ $ask_save == true ]]; then
     read -p "Do you want to save the result? (y/n): " save_resp
     if [[ $save_resp == "y" ]]; then
+      read -p "Enter the output file name: " output_file
       read -p "Enter the output file format (PDF or text): " format
       if [[ $format == "PDF" ]]; then
         output_file="$output_file.pdf"
+        wkhtmltopdf "file://$temp_file" "$output_file"
       else
         output_file="$output_file.txt"
+        cat "$temp_file" > "$output_file"
       fi
-      exec > "$output_file"
       echo "Output saved to $output_file."
     fi
   fi
+  rm -rf "$temp_dir"
 }
 
 check_domain() {
   domain=$1
-  echo -e "${BLUE}\nChecking $domain for clickjacking vulnerability...${NC}\n"
+  echo -e "${BLUE}\nChecking $domain for clickjacking vulnerability...${NC}\n" | tee -a "$temp_file"
   if curl -s -L -i "$domain" -o /dev/null -w '%{http_code}\n' -H "X-Frame-Options: DENY" | grep -q -e "20[0-9]\{1\}"; then
-    echo -e "\e[1m\e[31mclickjacking-found\e[0m $domain"
+    echo -e "\e[1m\e[31mclickjacking-found\e[0m $domain" | tee -a "$temp_file"
   else
-    echo -e "\e[1m\e[32mclickjacking-not-found\e[0m $domain"
+    echo -e "\e[1m\e[32mclickjacking-not-found\e[0m $domain" | tee -a "$temp_file"
   fi
 }
 
