@@ -1,6 +1,6 @@
 # Clickjacking Vulnerability Scanner :mag_right: :lock:
 
-Welcome to the Clickjacking Vulnerability Scanner! This powerful and easy-to-use Bash script is designed to help web security enthusiasts, developers, and researchers quickly identify websites with potential clickjacking vulnerabilities. By scanning a single URL or a list of domains, our scanner can detect the presence or absence of critical headers, such as X-Frame-Options and Content-Security-Policy, which are essential for protecting against clickjacking attacks. Let's make the web a safer place, one website at a time! :earth_asia: :shield:
+Welcome to the Clickjacking Vulnerability Scanner! This powerful and easy-to-use Bash script is designed to help web security enthusiasts, developers, and researchers quickly identify websites with potential clickjacking vulnerabilities. By scanning a single URL or a list of domains, our scanner can detect the presence or absence of critical headers, such as ``` X-Frame-Options```  and ``` Content-Security-Policy``` , which are essential for protecting against clickjacking attacks. Let's make the web a safer place, one website at a time! :earth_asia: :shield:
 
 ## :star2: Exciting Features
 
