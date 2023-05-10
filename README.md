@@ -35,6 +35,10 @@ cd UI-redress-attack-tool
 ``` bash
 chmod +x clickjacking_scanner.sh
 ``` 
+### Optional: Install wkhtmltopdf for PDF output
+
+If you want to save the output as PDF, you need to install `wkhtmltopdf`:
+
 #### Ubuntu/Debian
 
 ```bash
