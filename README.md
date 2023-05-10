@@ -5,7 +5,7 @@ Welcome to the Clickjacking Vulnerability Scanner! This powerful and easy-to-use
 ## :star2: Exciting Features
 
 - :mag: Scan a single URL or a list of domains for clickjacking vulnerabilities
-- :wrench: Choose between checking for X-Frame-Options or Content-Security-Policy headers
+- :wrench: Choose between checking for ``` X-Frame-Options```  or ``` Content-Security-Policy```
 - :art: Color-coded output for easy identification of vulnerable and secure websites
 - :floppy_disk: Save the results to a file in text or PDF format (optional)
 - :computer: User-friendly command-line options for better control and flexibility
