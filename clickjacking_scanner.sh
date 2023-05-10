@@ -2,13 +2,14 @@
 
 # Function to print usage information
 print_usage() {
-  echo -e "\e[33mUsage: $0 -u <url> | -d domain_list> [ -o <output_file> ]"
+  echo -e "\e[33mUsage: $0 -t <url> | -l domain_list> [-a] [ -o <output_file> ]"
   echo ""
   echo "Options:"
   echo "  -h              Show this help message"
-  echo "  -u url          Single URL to scan for clickjacking vulnerability."
-  echo "  -d domain_list  File containing a list of domains to scan for clickjacking vulnerability."
-  echo "  -s output_file  Save output to file"
+  echo "  -t url          Single URL to scan for clickjacking vulnerability."
+  echo "  -l domain_list  File containing a list of domains to scan for clickjacking vulnerability."
+  echo "  -a              Ask user if they want to save the result to a file"
+  echo "  -o output_file  Save output to file"
 }
 
 # Color codes
@@ -20,36 +21,44 @@ NC='\e[0m'
 
 echo -e "${RED}"
 cat << "EOF"
-        ██╗  ██╗ █████╗  ██████╗██╗  ██╗ ██████╗ ███████╗███████╗              ███████╗██╗  ██╗ ██████╗
-        ██║  ██║██╔══██╗██╔════╝██║ ██╔╝██╔═══██╗██╔════╝██╔════╝              ██╔════╝██║  ██║██╔════╝
-        ███████║███████║██║     █████╔╝ ██║   ██║█████╗  █████╗      █████╗    █████╗  ███████║██║     
-        ██╔══██║██╔══██║██║     ██╔═██╗ ██║   ██║██╔══╝  ██╔══╝      ╚════╝    ██╔══╝  ██╔══██║██║     
-        ██║  ██║██║  ██║╚██████╗██║  ██╗╚██████╔╝██║     ██║                   ███████╗██║  ██║╚██████╗
-        ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝                   ╚══════╝╚═╝  ╚═╝ ╚═════╝
-                                                                                                         
-  _ | o  _ |  o  _.  _ |  o  _           | ._   _   _. |_  o | o _|_       _  _  _. ._  ._   _  ._   _|_  _   _  | 
- (_ | | (_ |< | (_| (_ |< | (_|   \/ |_| | | | (/_ (_| |_) | | |  |_ \/   _> (_ (_| | | | | (/_ |     |_ (_) (_) | 
-             _|              _|                                      /                                                                                  
+
+      ██╗  ██╗ █████╗  ██████╗██╗  ██╗ ██████╗ ███████╗███████╗              ███████╗██╗  ██╗ ██████╗
+      ██║  ██║██╔══██╗██╔════╝██║ ██╔╝██╔═══██╗██╔════╝██╔════╝              ██╔════╝██║  ██║██╔════╝
+      ███████║███████║██║     █████╔╝ ██║   ██║█████╗  █████╗      █████╗    █████╗  ███████║██║     
+      ██╔══██║██╔══██║██║     ██╔═██╗ ██║   ██║██╔══╝  ██╔══╝      ╚════╝    ██╔══╝  ██╔══██║██║     
+      ██║  ██║██║  ██║╚██████╗██║  ██╗╚██████╔╝██║     ██║                   ███████╗██║  ██║╚██████╗
+      ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝                   ╚══════╝╚═╝  ╚═╝ ╚═════╝
+                                                                                               
+
+  _                                                                               __                       
+ /  | o  _ |  o  _.  _ |  o ._   _    \  /    | ._   _  ._ _. |_  o | o _|_      (_   _  _. ._  ._   _  ._ 
+ \_ | | (_ |< | (_| (_ |< | | | (_|    \/ |_| | | | (/_ | (_| |_) | | |  |_ \/   __) (_ (_| | | | | (/_ |  
+             _|                  _|                                         /                              
 
 EOF
 echo -e "${NC}"
 
 # Parse command-line arguments
-while getopts "hu:d:s:" opt; do
+ask_save=false
+while getopts "ht:l:ao:" opt; do
   case ${opt} in
     h )
       print_usage
       exit 0
       ;;
-    u )
+    t )
       # Check a single domain
       url=$OPTARG
       ;;
-    d )
+    l )
       # Check a list of domains
       domain_list=$OPTARG
       ;;
-    s )
+    a )
+      # Ask user if they want to save the result
+      ask_save=true
+      ;;
+    o )
       # Save output to file
       output_file=$OPTARG
       ;;
@@ -68,15 +77,37 @@ while getopts "hu:d:s:" opt; do
   esac
 done
 
+save_output() {
+  if [[ $ask_save == true ]]; then
+    read -p "Do you want to save the result? (y/n): " save_resp
+    if [[ $save_resp == "y" ]]; then
+      read -p "Enter the output file format (PDF or text): " format
+      if [[ $format == "PDF" ]]; then
+        output_file="$output_file.pdf"
+      else
+        output_file="$output_file.txt"
+      fi
+      exec > "$output_file"
+      echo "Output saved to $output_file."
+    fi
+  fi
+}
+
+check_domain() {
+  domain=$1
+  echo -e "${BLUE}\nChecking $domain for clickjacking vulnerability...${NC}\n"
+  if curl -s -L -i "$domain" -o /dev/null -w '%{http_code}\n' -H "X-Frame-Options: DENY" | grep -q -e "20[0-9]\{1\}"; then
+    echo -e "\e[1m\e[31mclickjacking-found\e[0m $domain"
+  else
+    echo -e "\e[1m\e[32mclickjacking-not-found\e[0m $domain"
+  fi
+}
+
 # Check if the user wants to scan a single target or a list of domains
 if [[ -n $url ]]; then
   # Scan a single domain
-  echo -e "${BLUE}\nChecking $url for clickjacking vulnerability...${NC}\n"
-  if curl -s -L -i "$url" -o /dev/null -w '%{http_code}\n' -H "X-Frame-Options: DENY" | grep -q -e "20[0-9]\{1\}"; then
-    echo -e "\e[1m\e[31mClickjacking-found\e[0m $url"
-  else
-    echo -e "\e[1m\e[32mclickjacking-not-found\e[0m $url"
-  fi
+  check_domain "$url"
+  save_output
 elif [[ -n $domain_list ]]; then
   # Scan a list of domains
   echo -e "${BLUE}\nChecking clickjacking vulnerability for all domains in $domain_list...${NC}\n"
@@ -85,22 +116,12 @@ elif [[ -n $domain_list ]]; then
     exit 1
   fi
   while read -r domain; do
-    echo -e "${BLUE}\nChecking $domain for clickjacking vulnerability...${NC}\n"
-    if curl -s -L -i "$domain" -o /dev/null -w '%{http_code}\n' -H "X-Frame-Options: DENY" | grep -q -e "20[0-9]\{1\}"; then
-      echo -e "\e[1m\e[31mclickjacking-found\e[0m $domain"
-    else
-      echo -e "\e[1m\e[32mclickjacking-not-found\e[0m $domain"
-    fi
+    check_domain "$domain"
   done < "$domain_list"
+  save_output
 else
   # No input provided
-  echo "Please provide either a single URL (-u) or a file containing a list of domains (-d)."
+  echo "Please provide either a single URL (-t) or a file containing a list of domains (-l)."
   print_usage
   exit 1
-fi
-
-# Save output to file if specified
-if [[ -n $output_file ]]; then
-  exec > "$output_file"
-  echo "Output saved to $output_file."
 fi
