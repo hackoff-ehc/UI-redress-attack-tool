@@ -21,13 +21,13 @@ Welcome to the Clickjacking Vulnerability Scanner! This powerful and easy-to-use
 1. Clone the repository or download the ZIP file and extract it:
 
 ``` bash
-git clone https://github.com/yourusername/clickjacking-scanner.git
+git clone https://github.com/hackoff-ehc/UI-redress-attack-tool.git
 ``` 
 
 2. Navigate to the extracted directory:
 
 ``` bash
-cd clickjacking-scanner
+cd UI-redress-attack-tool
 ``` 
 
 3. Make the script executable:
@@ -35,6 +35,16 @@ cd clickjacking-scanner
 ``` bash
 chmod +x clickjacking_scanner.sh
 ``` 
+#### Ubuntu/Debian
+
+```bash
+sudo apt-get update
+sudo apt-get install wkhtmltopdf
+```
+### macOS
+```bash
+brew install wkhtmltopdf
+```
 
 ## :book: Usage
 
@@ -76,7 +86,13 @@ chmod +x clickjacking_scanner.sh
 ./clickjacking_scanner.sh -l domain_list.txt -o output.txt
 ```
 
-5. Scan a single URL, checking for the Content-Security-Policy header:
+5. Ask to save the result to a file (PDF or text format):
+
+```bash
+./clickjacking_scanner.sh -t https://example.com -a
+```
+
+6. Scan a single URL, checking for the Content-Security-Policy header:
 
 ```bash
 ./clickjacking_scanner.sh -t https://example.com -f Content-Security-Policy
